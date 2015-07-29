@@ -1,12 +1,13 @@
 # 1) python imports: ##########################################################
-from ipdb import set_trace
+import urlparse
+
+# from ipdb import set_trace
 
 # 2) django imports: ##########################################################
 from django.db import models
 from django.utils import timezone
 
-# 3 DIY code imports: #########################################################
-from the_app.utils import web
+from the_app.utils import strings
 
 
 class ModelSuperClass(models.Model):
@@ -43,21 +44,41 @@ class Shop(ModelSuperClass):
     Model representing webshops where you can buy modules: e.g Schneidersladen,
     Postmodular or Analog Haven.
     """
-    brands = models.ManyToManyField(Brand)
+    brands = models.ManyToManyField(Brand, null=True, blank=True)
     name = models.CharField(max_length=64, null=False, blank=False)
-    slug = models.CharField(max_length=64)
+    slug = models.CharField(max_length=64, null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
+    country = models.CharField(max_length=64, null=True, blank=True)
     base_url = models.CharField(max_length=256)
     brands_path = models.CharField(
-        'Find all brands:',
+        'Path to mine brands',
         max_length=256,
         null=True,
         blank=True)
     search_brands_soup_call = models.CharField(
-        'Soup call for finding all brands:',
+        'Soup call to mine brands',
         max_length=256,
         null=True,
         blank=True)
+
+    def save(self, *args, **kwargs):
+        self.slug = strings.sluggify(self.name)
+        super(Shop, self).save(*args, **kwargs)
+
+    def brands_url(self):
+        """
+        Get the full URL for searching the shop's brands.
+        """
+        return urlparse.urljoin(self.base_url, self.brands_path)
+
+    def brand_count(self):
+        """
+        Function that returns False iff the shop has 0 brands, and True
+        otherwise.
+        """
+        return self.brands.count()
+
+    brand_count.short_description = 'Amt. of brands'
 
     def __unicode__(self):
         return self.slug

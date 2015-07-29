@@ -1,19 +1,21 @@
 from django.contrib import admin
+from django.db import models as db_models
 
-from models import (
+from the_app.models import (
     Shop,
     Brand,
     AlternativeBrandName)
 
 
 class ShopAdmin(admin.ModelAdmin):
-    list_display = ('name', 'created_at')
+
+    list_display = ('name', 'brand_count', 'country', 'created_at')
     search_fields = ('name',)
 
     fieldsets = [
 
         ('Shop info', {
-            'fields': ['name', 'slug']}),
+            'fields': ['name', 'slug', 'country']}),
 
         ('URL info', {
             'fields':  ['base_url', 'brands_path', 'search_brands_soup_call'],
@@ -37,12 +39,12 @@ class AlternativeBrandNameInline(admin.TabularInline):
 
 
 class AlternativeBrandNameAdmin(admin.ModelAdmin):
-    list_display = ('brand', 'alternative_name', 'shop', 'created_at')
+    list_display = ('alternative_name', 'brand', 'shop', 'created_at')
     search_fields = ('alternative_name',)
 
 
 class BrandAdmin(admin.ModelAdmin):
-    list_display = ('name', 'created_at')
+    list_display = ('name', 'created_at', 'created_via_modulargrid')
     search_fields = ('name',)
     inlines = [AlternativeBrandNameInline]
 
